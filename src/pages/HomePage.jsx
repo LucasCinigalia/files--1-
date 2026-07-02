@@ -433,4 +433,6 @@ export function HomePage() {
           errors={errors}
         />
       </Modal>
-    </MainTempla
+    </MainTemplate>
+  );
+}

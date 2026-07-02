@@ -154,4 +154,9 @@ export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpFor
         zIndex={1200}
       >
         <div className="flex justify-center items-center">
-          <img src={image} alt={title} className="max-h-[80vh] w-auto object-contain rounded-md
+          <img src={image} alt={title} className="max-h-[80vh] w-auto object-contain rounded-md" />
+        </div>
+      </Modal>
+    </>
+  );
+}
