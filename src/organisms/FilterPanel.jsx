@@ -25,7 +25,6 @@ export function FilterPanel({
 
   const orderOptions = [
     { value: 'recent', label: 'Mais recentes' },
-    { value: 'votes', label: 'Mais votados' },
     { value: 'urgent', label: 'Mais urgentes' },
   ];
 

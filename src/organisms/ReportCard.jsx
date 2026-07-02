@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Heading, Text } from '../atoms';
-import { ReportHeader, LocationField, VoteSection } from '../molecules';
+import { ReportHeader, LocationField } from '../molecules';
 import { Modal } from './Modal';
 
 export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpForm, onStatusChange, showActions = false }) {
@@ -15,7 +15,6 @@ export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpFor
     image,
     description,
     author,
-    votes,
     participants = 0,
     helpers = 0,
     chat = [],
@@ -89,10 +88,14 @@ export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpFor
               <button
                 type="button"
                 onClick={onOpenHelpForm}
-                className="text-sm text-blue-600 hover:underline"
-                aria-label="Quero ajudar"
+                className={`text-sm ${
+                  report.myParticipation?.helping
+                    ? 'text-emerald-600 font-semibold'
+                    : 'text-blue-600'
+                } hover:underline`}
+                aria-label={report.myParticipation?.helping ? 'Remover ajuda' : 'Quero ajudar'}
               >
-                Quero ajudar
+                {report.myParticipation?.helping ? '✓ Ajudando' : 'Quero ajudar'}
               </button>
               {showActions && (
                 <>
@@ -138,7 +141,6 @@ export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpFor
                   <span className="rounded-full bg-slate-100 px-3 py-1">{helpers} ajudando</span>
                   <span className="rounded-full bg-slate-100 px-3 py-1">{chat.length} mensagens</span>
                 </div>
-                <VoteSection votes={votes} />
               </div>
             </div>
           </div>

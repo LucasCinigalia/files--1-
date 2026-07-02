@@ -12,6 +12,14 @@ import {
 import LandingPage from './LandingPage';
 import { useReports } from '../hooks';
 
+const formatPhoneNumber = (value) => {
+  if (!value) return '';
+  const cleaned = value.replace(/\D/g, '');
+  if (cleaned.length <= 2) return cleaned;
+  if (cleaned.length <= 7) return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
+  return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7, 11)}`;
+};
+
 export function HomePage() {
   const {
     reports,
@@ -29,6 +37,7 @@ export function HomePage() {
     toggleParticipation,
     addChatMessage,
     addHelpOffer,
+    removeHelpOffer,
   } = useReports();
 
   const [showNewReportForm, setShowNewReportForm] = useState(false);
@@ -55,12 +64,11 @@ export function HomePage() {
   const chatReport = reports.find((report) => report.id === chatReportId);
   const myReports = reports.filter((report) => report.author === 'Você');
   const filteredMyReports = myReports.filter((report) => {
-    const matchesUrgency = filterUrgency === 'all' || report.urgency === filterUrgency;
-    const matchesStatus = filterStatus === 'all' || report.status === filterStatus;
+    // Para "Meus reports", apenas aplicar filtro de busca (searchTerm)
     const matchesSearch =
       report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       report.location.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesUrgency && matchesStatus && matchesSearch;
+    return matchesSearch;
   });
   const displayedReports = activeTab === 'myReports' ? filteredMyReports : filteredReports;
 
@@ -88,6 +96,7 @@ export function HomePage() {
     if (!formData.title.trim()) newErrors.title = 'Título é obrigatório';
     if (!formData.location.trim()) newErrors.location = 'Localização é obrigatória';
     if (!formData.description.trim()) newErrors.description = 'Descrição é obrigatória';
+    if (!formData.image.trim()) newErrors.image = 'Foto é obrigatória';
     return newErrors;
   };
 
@@ -150,6 +159,14 @@ export function HomePage() {
   };
 
   const handleOpenHelpForm = (id) => {
+    const report = reports.find((r) => r.id === id);
+    if (report?.myParticipation?.helping) {
+      // Se já está ajudando, remover a ajuda
+      removeHelpOffer(id);
+      toast.success('Sua oferta de ajuda foi removida');
+      return;
+    }
+    // Senão, abrir o formulário para adicionar ajuda
     setChatReportId(id);
     setShowHelpForm(true);
   };
@@ -399,9 +416,9 @@ export function HomePage() {
               <input
                 type="tel"
                 value={helpFormData.phone}
-                onChange={(e) => setHelpFormData({ ...helpFormData, phone: e.target.value })}
+                onChange={(e) => setHelpFormData({ ...helpFormData, phone: formatPhoneNumber(e.target.value) })}
                 className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                placeholder="(xx) x xxxx-xxxx"
+                placeholder="(xx) xxxxx-xxxx"
               />
               {helpErrors.phone && <p className="text-red-500 text-sm mt-1">{helpErrors.phone}</p>}
             </div>

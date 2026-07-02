@@ -71,7 +71,6 @@ export function useReports() {
       date: new Date().toISOString().split('T')[0],
       image: newReportData.image || 'https://images.unsplash.com/photo-1559020615-cd4628902d4a?w=400&h=300&fit=crop',
       author: 'Você',
-      votes: 1,
       participants: 0,
       helpers: 0,
       helpOffers: [],
@@ -98,12 +97,6 @@ export function useReports() {
 
   const deleteReport = (id) => {
     setReports((currentReports) => currentReports.filter((r) => r.id !== id));
-  };
-
-  const upvoteReport = (id) => {
-    setReports((currentReports) =>
-      currentReports.map((r) => (r.id === id ? { ...r, votes: r.votes + 1 } : r))
-    );
   };
 
   const toggleParticipation = (id, type) => {
@@ -161,6 +154,23 @@ export function useReports() {
     );
   };
 
+  const removeHelpOffer = (id) => {
+    setReports((currentReports) =>
+      currentReports.map((r) => {
+        if (r.id !== id) return r;
+        return {
+          ...r,
+          helpers: Math.max(0, (r.helpers ?? 0) - 1),
+          helpOffers: (r.helpOffers ?? []).slice(0, -1), // Remove o último oferecimento
+          myParticipation: {
+            ...r.myParticipation,
+            helping: false,
+          },
+        };
+      })
+    );
+  };
+
   // persist to localStorage
   useEffect(() => {
     try {
@@ -185,9 +195,9 @@ export function useReports() {
     addReport,
     updateReport,
     deleteReport,
-    upvoteReport,
     toggleParticipation,
     addChatMessage,
     addHelpOffer,
+    removeHelpOffer,
   };
 }

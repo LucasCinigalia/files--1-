@@ -101,7 +101,7 @@ export function NewReportForm({
         </div>
 
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-slate-700 mb-2">Foto (opcional)</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Foto <span className="text-red-500">*</span></label>
           <div className="flex items-start gap-4">
             <button
               type="button"
@@ -120,10 +120,13 @@ export function NewReportForm({
               </div>
             ) : (
               <div className="flex-1">
-                <p className="text-sm text-slate-500">Sem foto selecionada. Você pode adicionar uma foto do local.</p>
+                <p className="text-sm text-slate-500">Nenhuma foto selecionada. A foto é obrigatória para criar um report.</p>
               </div>
             )}
           </div>
+          {errors.image && (
+            <p className="text-red-500 text-sm mt-1">{errors.image}</p>
+          )}
 
           <Modal isOpen={showImageModal} onClose={() => setShowImageModal(false)} title="Selecionar foto" onSubmit={() => { onFormChange('image', tempImage); setShowImageModal(false); }} submitLabel="Salvar" zIndex={1100}>
             <div className="space-y-4">

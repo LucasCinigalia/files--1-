@@ -4,6 +4,5 @@ export * from './FilterSelect';
 export * from './FormField';
 export * from './LocationField';
 export * from './StatCard';
-export * from './VoteSection';
 export * from './ReportHeader';
 export * from './Logo';
