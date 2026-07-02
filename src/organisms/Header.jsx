@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '../atoms';
 import { Logo } from '../molecules';
-import { Plus } from 'lucide-react';
+import { Plus, LogOut } from 'lucide-react';
 
 const tabs = [
   { key: 'home', label: 'Página inicial' },
@@ -10,7 +10,7 @@ const tabs = [
   { key: 'myData', label: 'Perfil' },
 ];
 
-export function Header({ onNewReportClick, activeTab, onNavigate }) {
+export function Header({ onNewReportClick, activeTab, onNavigate, user, onLogout }) {
   const handleNavigate = (tab) => {
     if (onNavigate) onNavigate(tab);
   };
@@ -38,7 +38,20 @@ export function Header({ onNewReportClick, activeTab, onNavigate }) {
           ))}
         </nav>
 
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center gap-3">
+          {user && (
+            <span className="text-sm text-slate-600 hidden md:inline">
+              Olá, <span className="font-semibold">{user.name}</span>
+            </span>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onLogout}
+            className="flex items-center gap-1 text-slate-500 hover:text-red-600"
+          >
+            <LogOut size={16} />
+          </Button>
           <Button
             variant="primary"
             size="md"
@@ -46,7 +59,7 @@ export function Header({ onNewReportClick, activeTab, onNavigate }) {
             className="flex items-center gap-2"
           >
             <Plus size={20} />
-            Reportar Lixo
+            Reportar
           </Button>
         </div>
       </div>

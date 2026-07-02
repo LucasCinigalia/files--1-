@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Header, Footer, AboutModal } from '../organisms';
 
-export function MainTemplate({ 
+export function MainTemplate({
   onNewReportClick,
   activeTab,
   onNavigate,
-  children 
+  children,
+  user,
+  onLogout,
 }) {
   const [aboutOpen, setAboutOpen] = useState(false);
 
@@ -19,11 +21,13 @@ export function MainTemplate({
 
   return (
     <div className="app-shell flex flex-col">
-      <Header 
-        onNewReportClick={onNewReportClick} 
-        activeTab={activeTab}
-        onNavigate={onNavigate}
-      />
+      <Header
+              onNewReportClick={onNewReportClick}
+              activeTab={activeTab}
+              onNavigate={onNavigate}
+              user={user}
+              onLogout={onLogout}
+            />
       
       <main className="flex-1 pt-6">
         {children}

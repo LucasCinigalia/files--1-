@@ -11,11 +11,11 @@ export function Button({
   ...props 
 }) {
   const variantStyles = {
-    primary: 'bg-green-500 hover:bg-green-600 text-white',
-    secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-700',
-    danger: 'bg-red-100 hover:bg-red-200 text-red-700',
-    ghost: 'hover:bg-slate-100 text-slate-700',
-  };
+      primary: 'bg-green-500 hover:bg-green-600 text-white',
+      secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-700',
+      danger: 'bg-red-100 hover:bg-red-200 text-red-700',
+      ghost: 'bg-transparent hover:bg-slate-100 text-slate-700',
+    };
 
   const sizeStyles = {
     sm: 'px-3 py-1.5 text-sm',

@@ -2,6 +2,8 @@
 import { Heading, Text } from '../atoms';
 import { ReportHeader, LocationField } from '../molecules';
 import { Modal } from './Modal';
+import { Select } from '../atoms';
+import { Pencil, Trash2 } from 'lucide-react';
 
 export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpForm, onStatusChange, onToggleParticipation, showActions = false }) {
   const [showImageModal, setShowImageModal] = useState(false);
@@ -87,6 +89,7 @@ export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpFor
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-200">
+            {/* Botões de ação/interação - meio do card */}
             <button
               type="button"
               onClick={onOpenChat}
@@ -108,55 +111,52 @@ export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpFor
               {report.myParticipation?.helping ? '✓ Ajudando' : 'Quero ajudar'}
             </button>
             {multirao && (
-                          <button
-                            type="button"
-                            onClick={() => onToggleParticipation && onToggleParticipation(report.id, 'participating')}
-                            className={`text-sm ${
-                              report.myParticipation?.participating
-                                ? 'text-emerald-600 font-semibold'
-                                : 'text-purple-600'
-                            } hover:underline`}
-                            aria-label={report.myParticipation?.participating ? 'Cancelar participação' : 'Quero participar'}
-                          >
-                            {report.myParticipation?.participating ? '✓ Participando' : 'Quero participar'}
-                          </button>
-                        )}
-            {showActions && (
-              <>
-                <span className="text-slate-300">|</span>
-                <button onClick={onEdit} className="text-sm text-sky-600 hover:underline" aria-label="Editar">
-                  Editar
-                </button>
-                <button onClick={onDelete} className="text-sm text-red-600 hover:underline" aria-label="Remover">
-                  Remover
-                </button>
-                {status === 'pending' ? (
-                  <button
-                    onClick={() => onStatusChange('in-progress')}
-                    className="text-sm text-amber-600 hover:underline"
-                    aria-label="Marcar como em andamento"
-                  >
-                    Em andamento
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => onStatusChange('pending')}
-                    className="text-sm text-slate-600 hover:underline"
-                    aria-label="Voltar para pendente"
-                  >
-                    Voltar para pendente
-                  </button>
-                )}
-                <button
-                  onClick={() => onStatusChange('resolved')}
-                  className="text-sm text-emerald-600 hover:underline"
-                  aria-label="Marcar como resolvido"
-                >
-                  Marcar resolvido
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={() => onToggleParticipation && onToggleParticipation(report.id, 'participating')}
+                className={`text-sm ${
+                  report.myParticipation?.participating
+                    ? 'text-emerald-600 font-semibold'
+                    : 'text-purple-600'
+                } hover:underline`}
+                aria-label={report.myParticipation?.participating ? 'Cancelar participação' : 'Quero participar'}
+              >
+                {report.myParticipation?.participating ? '✓ Participando' : 'Quero participar'}
+              </button>
             )}
           </div>
+
+          {showActions && (
+            <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-200">
+              {/* Botões editar/remover - fundo do card */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={onEdit}
+                  className="text-sm text-slate-500 hover:text-sky-600 transition-colors"
+                  aria-label="Editar"
+                >
+                  <Pencil size={16} />
+                </button>
+                <button
+                  onClick={onDelete}
+                  className="text-sm text-slate-500 hover:text-red-600 transition-colors"
+                  aria-label="Remover"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <Select
+                value={status}
+                onChange={(e) => onStatusChange(e.target.value)}
+                options={[
+                  { value: 'pending', label: 'Pendente' },
+                  { value: 'in-progress', label: 'Em andamento' },
+                  { value: 'resolved', label: 'Concluído' },
+                ]}
+                className="!py-1 !px-2 !text-sm !w-auto"
+              />
+            </div>
+          )}
         </div>
       </div>
 
