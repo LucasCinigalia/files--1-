@@ -3,7 +3,7 @@ import { Heading, Text } from '../atoms';
 import { ReportHeader, LocationField } from '../molecules';
 import { Modal } from './Modal';
 
-export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpForm, onStatusChange, showActions = false }) {
+export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpForm, onStatusChange, onToggleParticipation, showActions = false }) {
   const [showImageModal, setShowImageModal] = useState(false);
   const {
     id,
@@ -75,74 +75,87 @@ export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpFor
               </Text>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 justify-end">
-              <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={onOpenChat}
-                className="text-sm text-sky-600 hover:underline"
-                aria-label="Abrir chat"
-              >
-                Ver mensagens
-              </button>
-              <button
-                type="button"
-                onClick={onOpenHelpForm}
-                className={`text-sm ${
-                  report.myParticipation?.helping
-                    ? 'text-emerald-600 font-semibold'
-                    : 'text-blue-600'
-                } hover:underline`}
-                aria-label={report.myParticipation?.helping ? 'Remover ajuda' : 'Quero ajudar'}
-              >
-                {report.myParticipation?.helping ? '✓ Ajudando' : 'Quero ajudar'}
-              </button>
-              {showActions && (
-                <>
-                  <button onClick={onEdit} className="text-sm text-sky-600 hover:underline" aria-label="Editar">
-                    Editar
-                  </button>
-                  <button onClick={onDelete} className="text-sm text-red-600 hover:underline" aria-label="Remover">
-                    Remover
-                  </button>
-                  {status === 'pending' ? (
-                    <button
-                      onClick={() => onStatusChange('in-progress')}
-                      className="text-sm text-amber-600 hover:underline"
-                      aria-label="Marcar como em andamento"
-                    >
-                      Em andamento
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => onStatusChange('pending')}
-                      className="text-sm text-slate-600 hover:underline"
-                      aria-label="Voltar para pendente"
-                    >
-                      Voltar para pendente
-                    </button>
-                  )}
-                  <button
-                    onClick={() => onStatusChange('resolved')}
-                    className="text-sm text-emerald-600 hover:underline"
-                    aria-label="Marcar como resolvido"
-                  >
-                    Marcar resolvido
-                  </button>
-                </>
-              )}
-            </div>
-
-              <div className="space-y-3 text-right">
-                <div className="flex flex-wrap items-center justify-end gap-3 text-sm text-slate-500">
-                  {multirao && (
-                    <span className="rounded-full bg-slate-100 px-3 py-1">{participants} participando</span>
-                  )}
-                  <span className="rounded-full bg-slate-100 px-3 py-1">{helpers} ajudando</span>
-                  <span className="rounded-full bg-slate-100 px-3 py-1">{chat.length} mensagens</span>
-                </div>
+            <div className="space-y-3 text-right">
+              <div className="flex flex-wrap items-center justify-end gap-3 text-sm text-slate-500">
+                {multirao && (
+                  <span className="rounded-full bg-slate-100 px-3 py-1">{participants} participando</span>
+                )}
+                <span className="rounded-full bg-slate-100 px-3 py-1">{helpers} ajudando</span>
+                <span className="rounded-full bg-slate-100 px-3 py-1">{chat.length} mensagens</span>
               </div>
             </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={onOpenChat}
+              className="text-sm text-sky-600 hover:underline"
+              aria-label="Abrir chat"
+            >
+              Ver mensagens
+            </button>
+            <button
+              type="button"
+              onClick={onOpenHelpForm}
+              className={`text-sm ${
+                report.myParticipation?.helping
+                  ? 'text-emerald-600 font-semibold'
+                  : 'text-blue-600'
+              } hover:underline`}
+              aria-label={report.myParticipation?.helping ? 'Remover ajuda' : 'Quero ajudar'}
+            >
+              {report.myParticipation?.helping ? '✓ Ajudando' : 'Quero ajudar'}
+            </button>
+            {multirao && (
+                          <button
+                            type="button"
+                            onClick={() => onToggleParticipation && onToggleParticipation(report.id, 'participating')}
+                            className={`text-sm ${
+                              report.myParticipation?.participating
+                                ? 'text-emerald-600 font-semibold'
+                                : 'text-purple-600'
+                            } hover:underline`}
+                            aria-label={report.myParticipation?.participating ? 'Cancelar participação' : 'Quero participar'}
+                          >
+                            {report.myParticipation?.participating ? '✓ Participando' : 'Quero participar'}
+                          </button>
+                        )}
+            {showActions && (
+              <>
+                <span className="text-slate-300">|</span>
+                <button onClick={onEdit} className="text-sm text-sky-600 hover:underline" aria-label="Editar">
+                  Editar
+                </button>
+                <button onClick={onDelete} className="text-sm text-red-600 hover:underline" aria-label="Remover">
+                  Remover
+                </button>
+                {status === 'pending' ? (
+                  <button
+                    onClick={() => onStatusChange('in-progress')}
+                    className="text-sm text-amber-600 hover:underline"
+                    aria-label="Marcar como em andamento"
+                  >
+                    Em andamento
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onStatusChange('pending')}
+                    className="text-sm text-slate-600 hover:underline"
+                    aria-label="Voltar para pendente"
+                  >
+                    Voltar para pendente
+                  </button>
+                )}
+                <button
+                  onClick={() => onStatusChange('resolved')}
+                  className="text-sm text-emerald-600 hover:underline"
+                  aria-label="Marcar como resolvido"
+                >
+                  Marcar resolvido
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
