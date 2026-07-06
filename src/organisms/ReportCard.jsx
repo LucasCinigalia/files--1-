@@ -5,7 +5,7 @@ import { Modal } from './Modal';
 import { Select } from '../atoms';
 import { Pencil, Trash2 } from 'lucide-react';
 
-export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpForm, onStatusChange, onToggleParticipation, showActions = false }) {
+export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpForm, onStatusChange, onToggleParticipation, showActions = false, showOwnerActions = false }) {
   const [showImageModal, setShowImageModal] = useState(false);
   const {
     id,
@@ -19,8 +19,10 @@ export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpFor
     author,
     participants = 0,
     helpers = 0,
+    helpOffers = [],
     chat = [],
     multirao = false,
+    isOwner = false,
   } = report;
 
   useEffect(() => {
@@ -85,6 +87,11 @@ export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpFor
                 <span className="rounded-full bg-slate-100 px-3 py-1">{helpers} ajudando</span>
                 <span className="rounded-full bg-slate-100 px-3 py-1">{chat.length} mensagens</span>
               </div>
+              <div className="flex flex-wrap items-center justify-end gap-3 text-sm text-slate-500">
+                {helpOffers.length > 0 && (
+                  <span className="rounded-full bg-slate-100 px-3 py-1">{helpOffers.length} ofertas de ajuda</span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -98,35 +105,39 @@ export function ReportCard({ report, onEdit, onDelete, onOpenChat, onOpenHelpFor
             >
               Ver mensagens
             </button>
-            <button
-              type="button"
-              onClick={onOpenHelpForm}
-              className={`text-sm ${
-                report.myParticipation?.helping
-                  ? 'text-emerald-600 font-semibold'
-                  : 'text-blue-600'
-              } hover:underline`}
-              aria-label={report.myParticipation?.helping ? 'Remover ajuda' : 'Quero ajudar'}
-            >
-              {report.myParticipation?.helping ? '✓ Ajudando' : 'Quero ajudar'}
-            </button>
-            {multirao && (
-              <button
-                type="button"
-                onClick={() => onToggleParticipation && onToggleParticipation(report.id, 'participating')}
-                className={`text-sm ${
-                  report.myParticipation?.participating
-                    ? 'text-emerald-600 font-semibold'
-                    : 'text-purple-600'
-                } hover:underline`}
-                aria-label={report.myParticipation?.participating ? 'Cancelar participação' : 'Quero participar'}
-              >
-                {report.myParticipation?.participating ? '✓ Participando' : 'Quero participar'}
-              </button>
+            {!isOwner && (
+              <>
+                <button
+                  type="button"
+                  onClick={onOpenHelpForm}
+                  className={`text-sm ${
+                    report.myParticipation?.helping
+                      ? 'text-emerald-600 font-semibold'
+                      : 'text-blue-600'
+                  } hover:underline`}
+                  aria-label={report.myParticipation?.helping ? 'Remover ajuda' : 'Quero ajudar'}
+                >
+                  {report.myParticipation?.helping ? '✓ Ajudando' : 'Quero ajudar'}
+                </button>
+                {multirao && (
+                  <button
+                    type="button"
+                    onClick={() => onToggleParticipation && onToggleParticipation(report.id, 'participating')}
+                    className={`text-sm ${
+                      report.myParticipation?.participating
+                        ? 'text-emerald-600 font-semibold'
+                        : 'text-purple-600'
+                    } hover:underline`}
+                    aria-label={report.myParticipation?.participating ? 'Cancelar participação' : 'Quero participar'}
+                  >
+                    {report.myParticipation?.participating ? '✓ Participando' : 'Quero participar'}
+                  </button>
+                )}
+              </>
             )}
           </div>
 
-          {showActions && (
+          {showActions && isOwner && (
             <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-200">
               {/* Botões editar/remover - fundo do card */}
               <div className="flex items-center gap-2">

@@ -1,4 +1,18 @@
 import React, { useState } from 'react';
+
+const formatMessageDate = (value) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
 import { toast } from 'react-toastify';
 import { MainTemplate } from '../templates';
 import { 
@@ -38,17 +52,20 @@ export function HomePage({ user, onLogout }) {
     addChatMessage,
     addHelpOffer,
     removeHelpOffer,
-  } = useReports();
+    loadReportDetails,
+  } = useReports(user);
 
-  const [showNewReportForm, setShowNewReportForm] = useState(false);
-  const [formData, setFormData] = useState({
+  const emptyFormData = {
     title: '',
     location: '',
     description: '',
     urgency: 'medium',
     image: '',
     multirao: false,
-  });
+  };
+
+  const [showNewReportForm, setShowNewReportForm] = useState(false);
+  const [formData, setFormData] = useState(emptyFormData);
   const [showHelpForm, setShowHelpForm] = useState(false);
   const [helpFormData, setHelpFormData] = useState({
     name: '',
@@ -62,7 +79,7 @@ export function HomePage({ user, onLogout }) {
   const [chatReportId, setChatReportId] = useState(null);
   const [chatMessage, setChatMessage] = useState('');
   const chatReport = reports.find((report) => report.id === chatReportId);
-  const myReports = reports.filter((report) => report.author === 'Você');
+  const myReports = reports.filter((report) => report.isOwner);
   const filteredMyReports = myReports.filter((report) => {
     // Para "Meus reports", apenas aplicar filtro de busca (searchTerm)
     const matchesSearch =
@@ -85,9 +102,9 @@ export function HomePage({ user, onLogout }) {
   };
 
   const handleFormChange = (key, value) => {
-    setFormData({ ...formData, [key]: value });
+    setFormData((prev) => ({ ...prev, [key]: value }));
     if (errors[key]) {
-      setErrors({ ...errors, [key]: '' });
+      setErrors((prev) => ({ ...prev, [key]: '' }));
     }
   };
 
@@ -96,32 +113,39 @@ export function HomePage({ user, onLogout }) {
     if (!formData.title.trim()) newErrors.title = 'Título é obrigatório';
     if (!formData.location.trim()) newErrors.location = 'Localização é obrigatória';
     if (!formData.description.trim()) newErrors.description = 'Descrição é obrigatória';
-    if (!formData.image.trim()) newErrors.image = 'Foto é obrigatória';
+    // imagem agora é opcional — aceite reports sem foto
     return newErrors;
   };
 
-  const handleSubmitReport = () => {
+  const handleSubmitReport = async () => {
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    if (editingId) {
-      updateReport(editingId, formData);
-    } else {
-      addReport(formData);
-    }
+    try {
+      if (editingId) {
+        await updateReport(editingId, formData);
+      } else {
+        await addReport(formData);
+      }
 
-    setEditingId(null);
-    setFormData({ title: '', location: '', description: '', urgency: 'medium', image: '', multirao: false });
-    setErrors({});
-    setShowNewReportForm(false);
+      setEditingId(null);
+      setFormData(emptyFormData);
+      setErrors({});
+      setShowNewReportForm(false);
+      toast.success(editingId ? 'Reporte atualizado com sucesso!' : 'Reporte cadastrado com sucesso!');
+    } catch (error) {
+      setErrors({ image: 'Não foi possível salvar o reporte. Verifique a conexão com o backend.' });
+      toast.error('Erro ao salvar reporte');
+    }
   };
 
   const handleEdit = (report) => {
     setEditingId(report.id);
     setFormData({
+      ...emptyFormData,
       title: report.title || '',
       location: report.location || '',
       description: report.description || '',
@@ -135,6 +159,7 @@ export function HomePage({ user, onLogout }) {
   const handleStatusChange = (report, targetStatus) => {
     if (targetStatus === 'resolved') {
       updateReport(report.id, {
+        ...report,
         previousStatus: report.status,
         status: 'resolved',
       });
@@ -143,6 +168,7 @@ export function HomePage({ user, onLogout }) {
 
     if (targetStatus === 'reopen' && report.status === 'resolved') {
       updateReport(report.id, {
+        ...report,
         status: report.previousStatus || 'pending',
         previousStatus: null,
       });
@@ -150,11 +176,13 @@ export function HomePage({ user, onLogout }) {
     }
 
     updateReport(report.id, {
+      ...report,
       status: targetStatus,
     });
   };
 
   const handleOpenChat = (id) => {
+    loadReportDetails(id);
     setChatReportId(id);
   };
 
@@ -225,7 +253,7 @@ export function HomePage({ user, onLogout }) {
   const closeNewReportModal = () => {
     setShowNewReportForm(false);
     setEditingId(null);
-    setFormData({ title: '', location: '', description: '', urgency: 'medium', image: '' });
+    setFormData(emptyFormData);
     setErrors({});
   };
 
@@ -254,15 +282,11 @@ export function HomePage({ user, onLogout }) {
               <div className="grid gap-4 text-slate-700">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                   <p className="text-sm text-slate-500 mb-2">Nome</p>
-                  <p className="text-lg font-semibold">Usuário Exemplo</p>
+                  <p className="text-lg font-semibold">{user?.name || 'Usuário'}</p>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                   <p className="text-sm text-slate-500 mb-2">Email</p>
-                  <p className="text-lg font-semibold">usuario@exemplo.com</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                  <p className="text-sm text-slate-500 mb-2">Cidade</p>
-                  <p className="text-lg font-semibold">Florianópolis</p>
+                  <p className="text-lg font-semibold">{user?.email || 'usuario@exemplo.com'}</p>
                 </div>
               </div>
             </div>
@@ -294,6 +318,7 @@ export function HomePage({ user, onLogout }) {
                                           onStatusChange={(status) => handleStatusChange(report, status)}
                                           onToggleParticipation={(id, type) => toggleParticipation(id, type)}
                                           showActions={activeTab === 'myReports'}
+                                          showOwnerActions={activeTab === 'home'}
                                         />
                   ))}
                 </div>
@@ -319,18 +344,18 @@ export function HomePage({ user, onLogout }) {
                             <span className="rounded-full bg-slate-100 px-3 py-1">{chatReport.participants} participando</span>
                           )}
                           <span className="rounded-full bg-slate-100 px-3 py-1">{chatReport.helpers} ajudando</span>
-                          <span className="rounded-full bg-slate-100 px-3 py-1">{chatReport.chat.length} mensagens</span>
+                          <span className="rounded-full bg-slate-100 px-3 py-1">{(chatReport.chat || []).length} mensagens</span>
                         </div>
 
                         <div className="space-y-3 max-h-64 overflow-y-auto rounded-3xl border border-slate-200 bg-slate-50 p-4">
-              {chatReport.chat.length > 0 ? (
-                chatReport.chat.map((message) => (
+              {(chatReport.chat || []).length > 0 ? (
+                (chatReport.chat || []).map((message) => (
                   <div key={message.id} className="rounded-3xl bg-white p-3 shadow-sm">
                     <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
-                      <span>{message.author}</span>
-                      <span>{message.date}</span>
+                      <span className="font-semibold text-slate-700">{message.authorName || message.author || message.autor || 'Usuário'}</span>
+                      <span>{formatMessageDate(message.date || message.criado_em || '')}</span>
                     </div>
-                    <p className="mt-2 text-sm text-slate-700">{message.text}</p>
+                    <p className="mt-2 text-sm text-slate-700">{message.text || message.texto || ''}</p>
                   </div>
                 ))
               ) : (

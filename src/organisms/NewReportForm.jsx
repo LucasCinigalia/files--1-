@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FormField } from '../molecules';
 import { Textarea, Select } from '../atoms';
 import { Modal } from './Modal';
@@ -10,6 +10,10 @@ export function NewReportForm({
 }) {
   const [showImageModal, setShowImageModal] = useState(false);
   const [tempImage, setTempImage] = useState(formData.image || '');
+
+  useEffect(() => {
+    setTempImage(formData.image || '');
+  }, [formData.image]);
   const urgencyOptions = [
     { value: 'low', label: 'Baixa' },
     { value: 'medium', label: 'Média' },

@@ -40,34 +40,46 @@ export function LoginPage({ onLogin }) {
     }
 
     setLoading(true);
-    // Simula chamada assíncrona
-    await new Promise((r) => setTimeout(r, 500));
+    const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-    if (isRegistering) {
-      // Salva novo usuário
-      const users = JSON.parse(localStorage.getItem('limpaocao_users') || '[]');
-      if (users.find((u) => u.email === formData.email)) {
-        setErrors({ email: 'Este email já está cadastrado' });
+    try {
+      if (isRegistering) {
+        const resp = await fetch(`${API}/api/usuarios`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome: formData.name, email: formData.email, senha: formData.password }),
+        });
+        if (!resp.ok) {
+          const err = await resp.json();
+          setErrors({ email: err.erro || 'Erro no cadastro' });
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Login via API
+      const loginResp = await fetch(`${API}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, senha: formData.password }),
+      });
+
+      if (!loginResp.ok) {
+        const err = await loginResp.json();
+        setErrors({ email: err.erro || 'E-mail ou senha incorretos' });
         setLoading(false);
         return;
       }
-      const newUser = { name: formData.name, email: formData.email, password: formData.password };
-      users.push(newUser);
-      localStorage.setItem('limpaocao_users', JSON.stringify(users));
-    }
 
-    // Login: busca usuário
-    const users = JSON.parse(localStorage.getItem('limpaocao_users') || '[]');
-    const user = users.find((u) => u.email === formData.email && u.password === formData.password);
-    if (!user && !isRegistering) {
-      setErrors({ email: 'Email ou senha incorretos' });
+      const usuario = await loginResp.json();
+      const userData = { name: usuario.nome || usuario.name, email: usuario.email, id: usuario.id };
+      localStorage.setItem('limpaocao_currentUser', JSON.stringify(userData));
       setLoading(false);
-      return;
+      onLogin(userData);
+    } catch (e) {
+      setErrors({ email: 'Erro de conexão' });
+      setLoading(false);
     }
-
-    localStorage.setItem('limpaocao_currentUser', JSON.stringify(user || { name: formData.name, email: formData.email }));
-    setLoading(false);
-    onLogin(user || { name: formData.name, email: formData.email });
   };
 
   const toggleMode = () => {
